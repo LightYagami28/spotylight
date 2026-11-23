@@ -1138,7 +1138,7 @@ export const SubsonicController: InternalControllerEndpoint = {
     getGenreList: async ({ apiClientProps, query }) => {
         const sortOrder = (query.sortOrder?.toLowerCase() ?? 'asc') as 'asc' | 'desc';
 
-        const res = await ssApiClient(apiClientProps).getGenres({});
+        const res = await ssApiClient(apiClientProps).getGenres({ query: {} });
 
         if (res.status !== 200) {
             throw new Error('Failed to get genre list');
