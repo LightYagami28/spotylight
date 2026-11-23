@@ -2199,7 +2199,7 @@ ipcMain.handle(
         if (!lanIp) lanIp = getLanIp();
         if (!lanIp) return null;
         await ensureEventServer();
-        const safeUrlId = createHash('md5').update(data.url).digest('hex').substring(0, 16);
+        const safeUrlId = createHash('sha256').update(data.url).digest('hex').substring(0, 16);
         const pp = data.preservePitch ? '1' : '0';
         const fileName = `dlna-speed-${safeUrlId}-s${data.speed}-p${pp}.mp3`;
         const filePath = path.join(os.tmpdir(), fileName);
@@ -2277,7 +2277,7 @@ ipcMain.handle(
                 // Catch
             }
         }
-        const safeUrlId = createHash('md5').update(data.url).digest('hex').substring(0, 16);
+        const safeUrlId = createHash('sha256').update(data.url).digest('hex').substring(0, 16);
         const pp = data.preservePitch ? '1' : '0';
         const fileName = `dlna-speed-${safeUrlId}-s${data.speed}-p${pp}.mp3`;
         const filePath = path.join(os.tmpdir(), fileName);

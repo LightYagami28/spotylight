@@ -85,7 +85,7 @@ export const validateResponse = ({
                 code: issue.code,
                 ...(issue.code === 'invalid_type' && {
                     expected: issue.expected,
-                    received: issue.received,
+                    received: (issue as { input?: unknown }).input,
                 }),
                 path: issue.path.join('.'),
             })),

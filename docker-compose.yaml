@@ -1,7 +1,7 @@
 services:
     feishin:
         container_name: feishin
-        image: "ghcr.io/jeffvli/feishin:latest"
+        image: "ghcr.io/jeffvli/feishin:latest@sha256:6c75a4d3b99065ac245e2eb2b693fde3e5f2a6fe41c9e255da4fcb8948071965"
         restart: unless-stopped
         environment:
             - SERVER_NAME=jellyfin # pre-defined server name
@@ -13,4 +13,4 @@ services:
             - ANALYTICS_DISABLED=true # Set to true to disable Umami analytics tracking
         ports:
             - 9180:9180
-            # Alternatively, to restrict to only localhost, - 127.0.0.1:9180:8190
+            # Alternatively, to restrict to only localhost, - 127.0.0.1:9180:9180

@@ -1,5 +1,3 @@
-import type ReactPlayer from 'react-player';
-
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
@@ -14,6 +12,7 @@ import {
     useRadioStore,
 } from '/@/renderer/features/radio/hooks/use-radio-player';
 import { usePlaybackSettings, usePlayerMuted, usePlayerVolume } from '/@/renderer/store';
+import { getInternalPlayer, type ReactPlayerRef } from '/@/renderer/utils/react-player-compat';
 import { toast } from '/@/shared/components/toast/toast';
 import { PlayerStatus } from '/@/shared/types/types';
 
@@ -82,10 +81,10 @@ export function RadioWebPlayer() {
     }, [volume, isMuted, webAudio, player1Source]);
 
     const handlePlayer1Start = useCallback(
-        async (player: ReactPlayer) => {
+        async (player: ReactPlayerRef) => {
             if (!webAudio) return;
 
-            const internal = player.getInternalPlayer() as HTMLMediaElement | undefined;
+            const internal = getInternalPlayer(player);
             if (!internal) return;
 
             // If we've already processed this exact media element, reuse the existing source

@@ -1203,7 +1203,7 @@ if (!singleInstance) {
                     responseHeaders: {
                         ...details.responseHeaders,
                         'Content-Security-Policy': [
-                            "script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline' https://umami.jeffvli.org; style-src 'self' 'unsafe-inline'; media-src 'self' http: https: data: blob:; img-src 'self' http: https: data: blob:; connect-src 'self' http: https: ws: wss:; default-src 'self';",
+                            "default-src 'self'; script-src 'self' https://umami.jeffvli.org; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' http: https: data: blob:; media-src 'self' http: https: data: blob:; connect-src 'self' http: https: ws: wss:; font-src 'self' data:; object-src 'none'; base-uri 'self';",
                         ],
                     },
                 });

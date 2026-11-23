@@ -197,7 +197,7 @@ export const KaraokeLyricLine = memo(
         const hasSyncedRomajiOverlay = romajiCueLines !== undefined;
         const hasSyncedPronunciation = hasSyncedOverlayCueLines(pronunciationCueLines);
         const hasSyncedTranslation = hasSyncedOverlayCueLines(translationCueLines);
-        const pronunciationFallbackText =
+        const fallbackText =
             !hasSyncedRomajiOverlay && !hasSyncedPronunciation
                 ? (pronunciationText ?? romajiText)
                 : null;
@@ -270,12 +270,10 @@ export const KaraokeLyricLine = memo(
                             </div>
                         );
                     })}
-                    {pronunciationFallbackText && (
+                    {fallbackText && (
                         <span
                             className={styles.overlayLine}
-                            dangerouslySetInnerHTML={{
-                                __html: sanitize(pronunciationFallbackText),
-                            }}
+                            dangerouslySetInnerHTML={{ __html: sanitize(fallbackText) }}
                         />
                     )}
                     {!hasSyncedTranslation && translatedText && translatedText !== text && (

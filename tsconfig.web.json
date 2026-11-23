@@ -8,6 +8,7 @@
     "src/i18n/**/*",
     "src/main/features/core/lyrics/furigana.ts",
     "src/shared/**/*",
+    "src/types/**/*.d.ts",
     "src/remote/**/*",
     "package.json"
   ],

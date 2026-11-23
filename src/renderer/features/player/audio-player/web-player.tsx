@@ -1,5 +1,4 @@
 import type { Dispatch } from 'react';
-import type ReactPlayer from 'react-player';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -27,6 +26,11 @@ import {
     usePlayerStoreBase,
     usePlayerVolume,
 } from '/@/renderer/store';
+import {
+    getInternalPlayer,
+    type ReactPlayerRef,
+    seekPlayerTo,
+} from '/@/renderer/utils/react-player-compat';
 import { toast } from '/@/shared/components/toast/toast';
 import { QueueSong } from '/@/shared/types/domain-types';
 import { CrossfadeStyle, PlayerRepeat, PlayerStatus, PlayerStyle } from '/@/shared/types/types';
@@ -265,7 +269,7 @@ export function WebPlayer() {
             setLocalPlayerStatus(PlayerStatus.PAUSED);
             playerRef.current?.pause();
         } else {
-            playerRef.current?.player1()?.ref?.getInternalPlayer().pause();
+            getInternalPlayer(playerRef.current?.player1()?.ref)?.pause();
 
             // If mediaAutoNext resulted in a stopped/paused state (e.g. end of queue,
             // or pauseOnNextSongEnd flag), stop all audio instead of restoring volume.
@@ -285,7 +289,7 @@ export function WebPlayer() {
             setLocalPlayerStatus(PlayerStatus.PAUSED);
             playerRef.current?.pause();
         } else {
-            playerRef.current?.player2()?.ref?.getInternalPlayer().pause();
+            getInternalPlayer(playerRef.current?.player2()?.ref)?.pause();
 
             const currentStatus = usePlayerStoreBase.getState().player.status;
             if (currentStatus !== PlayerStatus.PLAYING) {
@@ -321,24 +325,20 @@ export function WebPlayer() {
                     if (num === 1) {
                         playerRef.current?.player1()?.setVolume(volume);
                         playerRef.current?.player2()?.setVolume(0);
-                        playerRef.current?.player2()?.ref?.getInternalPlayer()?.pause();
+                        getInternalPlayer(playerRef.current?.player2()?.ref)?.pause();
                     } else {
                         playerRef.current?.player2()?.setVolume(volume);
                         playerRef.current?.player1()?.setVolume(0);
-                        playerRef.current?.player1()?.ref?.getInternalPlayer()?.pause();
+                        getInternalPlayer(playerRef.current?.player1()?.ref)?.pause();
                     }
                 }
 
-                let type: 'fraction' | 'seconds' | undefined = undefined;
-
-                if (timestamp < 1) {
-                    type = 'seconds';
-                }
-
                 if (num === 1) {
-                    playerRef.current?.player1()?.ref?.seekTo(timestamp, type);
+                    const ref = playerRef.current?.player1()?.ref;
+                    if (ref) seekPlayerTo(ref, timestamp);
                 } else {
-                    playerRef.current?.player2()?.ref?.seekTo(timestamp, type);
+                    const ref = playerRef.current?.player2()?.ref;
+                    if (ref) seekPlayerTo(ref, timestamp);
                 }
             },
             onPlayerStatus: async (properties) => {
@@ -355,11 +355,11 @@ export function WebPlayer() {
                     if (num === 1) {
                         playerRef.current?.player1()?.setVolume(volume);
                         playerRef.current?.player2()?.setVolume(0);
-                        playerRef.current?.player2()?.ref?.getInternalPlayer()?.pause();
+                        getInternalPlayer(playerRef.current?.player2()?.ref)?.pause();
                     } else {
                         playerRef.current?.player2()?.setVolume(volume);
                         playerRef.current?.player1()?.setVolume(0);
-                        playerRef.current?.player1()?.ref?.getInternalPlayer()?.pause();
+                        getInternalPlayer(playerRef.current?.player1()?.ref)?.pause();
                     }
                 }
 
@@ -408,8 +408,7 @@ export function WebPlayer() {
         const interval = setInterval(() => {
             const activePlayer =
                 num === 1 ? playerRef.current?.player1() : playerRef.current?.player2();
-            const internalPlayer =
-                activePlayer?.ref?.getInternalPlayer() as HTMLAudioElement | null;
+            const internalPlayer = getInternalPlayer(activePlayer?.ref) as HTMLAudioElement | null;
 
             if (!internalPlayer) {
                 return;
@@ -530,12 +529,12 @@ export function WebPlayer() {
     const player2Url = useSongUrl(player2, num === 2, transcode);
 
     const applyPendingSeekIfNeeded = useCallback(
-        (reactPlayer: ReactPlayer, activeSlot: 1 | 2) => {
+        (reactPlayer: ReactPlayerRef, activeSlot: 1 | 2) => {
             if (pendingLocalSeekRef.current <= 0) return;
             if (activeSlot !== num) return;
             const seekTo = pendingLocalSeekRef.current;
             pendingLocalSeekRef.current = -1;
-            reactPlayer.seekTo(seekTo, 'seconds');
+            seekPlayerTo(reactPlayer, seekTo);
             if (status === PlayerStatus.PLAYING) {
                 playerRef.current?.setVolume(volume);
                 setLocalPlayerStatus(PlayerStatus.PLAYING);
@@ -545,7 +544,7 @@ export function WebPlayer() {
     );
 
     const handlePlayer1Start = useCallback(
-        async (reactPlayer: ReactPlayer) => {
+        async (reactPlayer: ReactPlayerRef) => {
             applyPendingSeekIfNeeded(reactPlayer, 1);
             if (!webAudio || player1Source) return;
             if (player1Url) {
@@ -556,7 +555,7 @@ export function WebPlayer() {
                 }
             }
 
-            const internal = reactPlayer.getInternalPlayer() as HTMLMediaElement | undefined;
+            const internal = getInternalPlayer(reactPlayer);
             if (internal) {
                 const { context, gains } = webAudio;
                 const source = context.createMediaElementSource(internal);
@@ -568,7 +567,7 @@ export function WebPlayer() {
     );
 
     const handlePlayer2Start = useCallback(
-        async (reactPlayer: ReactPlayer) => {
+        async (reactPlayer: ReactPlayerRef) => {
             applyPendingSeekIfNeeded(reactPlayer, 2);
             if (!webAudio || player2Source) return;
             if (player2Url) {
@@ -577,7 +576,7 @@ export function WebPlayer() {
                 }
             }
 
-            const internal = reactPlayer.getInternalPlayer() as HTMLMediaElement | undefined;
+            const internal = getInternalPlayer(reactPlayer);
             if (internal) {
                 const { context, gains } = webAudio;
                 const source = context.createMediaElementSource(internal);
@@ -627,7 +626,7 @@ function crossfadeHandler(args: {
     crossfadeDuration: number;
     crossfadeStyle: CrossfadeStyle;
     currentPlayer: {
-        ref: null | ReactPlayer;
+        ref: null | ReactPlayerRef;
         setVolume: (volume: number) => void;
     };
     currentPlayerNum: number;
@@ -636,7 +635,7 @@ function crossfadeHandler(args: {
     hasNextSong: boolean;
     isTransitioning: boolean | string;
     nextPlayer: {
-        ref: null | ReactPlayer;
+        ref: null | ReactPlayerRef;
         setVolume: (volume: number) => void;
     };
     playerNum: number;
@@ -670,7 +669,7 @@ function crossfadeHandler(args: {
     if (!hasNextSong) {
         currentPlayer.setVolume(volume);
         nextPlayer.setVolume(0);
-        nextPlayer.ref?.getInternalPlayer()?.pause();
+        getInternalPlayer(nextPlayer.ref)?.pause();
 
         if (isTransitioning) {
             setIsTransitioning(false);
@@ -687,7 +686,7 @@ function crossfadeHandler(args: {
             }
 
             nextPlayer.setVolume(0);
-            nextPlayer.ref?.getInternalPlayer().play();
+            getInternalPlayer(nextPlayer.ref)?.play();
             return setIsTransitioning(player);
         }
 
@@ -758,7 +757,7 @@ function gaplessHandler(args: {
     isFlac: boolean;
     isTransitioning: boolean | string;
     nextPlayer: {
-        ref: null | ReactPlayer;
+        ref: null | ReactPlayerRef;
         setVolume: (volume: number) => void;
     };
     setIsTransitioning: Dispatch<boolean | string>;
@@ -781,7 +780,7 @@ function gaplessHandler(args: {
     }
 
     if (!hasNextSong) {
-        nextPlayer.ref?.getInternalPlayer()?.pause();
+        getInternalPlayer(nextPlayer.ref)?.pause();
         if (isTransitioning) setIsTransitioning(false);
         return null;
     }
@@ -810,8 +809,7 @@ function gaplessHandler(args: {
             return null;
         }
 
-        return nextPlayer.ref
-            ?.getInternalPlayer()
+        return getInternalPlayer(nextPlayer.ref)
             ?.play()
             .catch(() => {});
     }
@@ -853,8 +851,8 @@ function getCrossfadeEasing(style: CrossfadeStyle): {
     }
 }
 
-function getDuration(ref: null | ReactPlayer | undefined) {
-    return ref?.getInternalPlayer()?.duration || 0;
+function getDuration(ref: null | ReactPlayerRef | undefined) {
+    return getInternalPlayer(ref)?.duration || 0;
 }
 
 function getDurationPadding(isFlac: boolean) {

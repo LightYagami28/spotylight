@@ -58,7 +58,7 @@ export const ExportImportSettingsModal = () => {
 
             if (!validationRes.success) {
                 const error = validationRes.error as ZodError;
-                const firstError = error.errors.pop();
+                const firstError = error.issues.pop();
 
                 const dotPath = firstError?.path.join('.');
                 const reason = firstError?.message;

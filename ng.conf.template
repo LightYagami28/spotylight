@@ -3,6 +3,7 @@ server {
   listen [::]:9180;
   sendfile on;
   default_type application/octet-stream;
+  add_header Content-Security-Policy "default-src 'self'; script-src 'self' https://umami.jeffvli.org; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' http: https: data: blob:; media-src 'self' http: https: data: blob:; connect-src 'self' http: https: ws: wss:; font-src 'self' data:; object-src 'none'; base-uri 'self'" always;
 
   gzip on;
   gzip_http_version 1.1;

@@ -34,6 +34,10 @@ export default defineConfig({
             localsConvention: 'camelCase',
         },
     },
+    define: {
+        __APP_PROD__: JSON.stringify(process.env.NODE_ENV === 'production'),
+        __APP_VERSION__: JSON.stringify(version),
+    },
     plugins: [
         createReactPlugin(),
         ViteEjsPlugin({

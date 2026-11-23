@@ -1,5 +1,5 @@
+import Player from '@jellybrick/mpris-service';
 import { ipcMain } from 'electron';
-import Player from 'mpris-service';
 
 import { getMainWindow, showMainWindow } from '/@/main/index';
 import log from '/@/main/logger';

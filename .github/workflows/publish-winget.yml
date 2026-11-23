@@ -12,8 +12,10 @@ on:
 jobs:
   publish:
     runs-on: windows-latest
+    permissions:
+      contents: read
     steps:
-      - uses: vedantmgoyal9/winget-releaser@main
+      - uses: vedantmgoyal9/winget-releaser@b7370d4d152efdce803a26cc6ca9eee58cb2ad54
         with:
           identifier: jeffvli.Feishin
           installers-regex: 'Feishin-*-win-(x64|arm64)\.exe'

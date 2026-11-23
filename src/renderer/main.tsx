@@ -25,6 +25,30 @@ function createIDBPersister(idbValidKey: IDBValidKey = 'reactQuery') {
 
 const indexedDbPersister = createIDBPersister('feishin');
 
+const initializeAnalytics = () => {
+    const analyticsDisabled = (window as unknown as { ANALYTICS_DISABLED?: boolean | string })
+        .ANALYTICS_DISABLED;
+
+    if (
+        localStorage.getItem('umami.disabled') === '1' ||
+        analyticsDisabled === true ||
+        analyticsDisabled === 'true'
+    ) {
+        return;
+    }
+
+    const script = document.createElement('script');
+    script.defer = true;
+    script.src = 'https://umami.jeffvli.org/script.js';
+    script.setAttribute('data-website-id', '5120fc56-cffa-4d42-8b6c-9afb6f459251');
+    script.setAttribute('data-exclude-search', 'true');
+    script.setAttribute('data-exclude-hash', 'true');
+    script.setAttribute('data-auto-track', 'false');
+    document.head.appendChild(script);
+};
+
+initializeAnalytics();
+
 createRoot(document.getElementById('root')!).render(
     <PersistQueryClientProvider
         client={queryClient}

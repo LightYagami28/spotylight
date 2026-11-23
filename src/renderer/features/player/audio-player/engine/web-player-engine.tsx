@@ -1,20 +1,24 @@
 import type { RefObject } from 'react';
-import type ReactPlayer from 'react-player';
 
 import { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 import { AudioPlayer, PlayerOnProgressProps } from '/@/renderer/features/player/audio-player/types';
 import { convertToLogVolume } from '/@/renderer/features/player/audio-player/utils/player-utils';
 import { logger } from '/@/renderer/utils/logger';
+import {
+    getInternalPlayer,
+    type ReactPlayerRef,
+    seekPlayerTo,
+} from '/@/renderer/utils/react-player-compat';
 import { PlayerStatus } from '/@/shared/types/types';
 
 export interface WebPlayerEngineHandle extends AudioPlayer {
     player1(): {
-        ref: null | ReactPlayer;
+        ref: null | ReactPlayerRef;
         setVolume: (volume: number) => void;
     };
     player2(): {
-        ref: null | ReactPlayer;
+        ref: null | ReactPlayerRef;
         setVolume: (volume: number) => void;
     };
 }
@@ -29,8 +33,8 @@ interface WebPlayerEngineProps {
     onErrorPause: () => void;
     onProgressPlayer1: (e: PlayerOnProgressProps) => void;
     onProgressPlayer2: (e: PlayerOnProgressProps) => void;
-    onStartedPlayer1: (player: ReactPlayer) => void;
-    onStartedPlayer2: (player: ReactPlayer) => void;
+    onStartedPlayer1: (player: ReactPlayerRef) => void;
+    onStartedPlayer2: (player: ReactPlayerRef) => void;
     playerNum: number;
     playerRef: RefObject<null | WebPlayerEngineHandle>;
     playerStatus: PlayerStatus;
@@ -81,21 +85,21 @@ export const WebPlayerEngine = (props: WebPlayerEngineProps) => {
         volume,
     } = props;
 
-    const player1Ref = useRef<null | ReactPlayer>(null);
-    const player2Ref = useRef<null | ReactPlayer>(null);
+    const player1Ref = useRef<null | ReactPlayerRef>(null);
+    const player2Ref = useRef<null | ReactPlayerRef>(null);
     const networkRetryCount1 = useRef(0);
     const networkRetryCount2 = useRef(0);
-    const [ReactPlayerComponent, setReactPlayerComponent] = useState<any>(null);
+    const [ReactPlayerRefComponent, setReactPlayerRefComponent] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         let isMounted = true;
 
-        const loadReactPlayer = async () => {
+        const loadReactPlayerRef = async () => {
             try {
                 const module = await import('react-player');
                 if (isMounted) {
-                    setReactPlayerComponent(() => module.default);
+                    setReactPlayerRefComponent(() => module.default);
                     setIsLoading(false);
                 }
             } catch (error) {
@@ -104,7 +108,7 @@ export const WebPlayerEngine = (props: WebPlayerEngineProps) => {
             }
         };
 
-        loadReactPlayer();
+        loadReactPlayerRef();
 
         return () => {
             isMounted = false;
@@ -124,16 +128,16 @@ export const WebPlayerEngine = (props: WebPlayerEngineProps) => {
             setInternalVolume2(Math.min(1, internalVolume2 + by / 100));
         },
         pause() {
-            player1Ref.current?.getInternalPlayer()?.pause();
-            player2Ref.current?.getInternalPlayer()?.pause();
+            getInternalPlayer(player1Ref.current)?.pause();
+            getInternalPlayer(player2Ref.current)?.pause();
         },
         play() {
-            player1Ref.current?.getInternalPlayer()?.pause();
-            player2Ref.current?.getInternalPlayer()?.pause();
+            getInternalPlayer(player1Ref.current)?.pause();
+            getInternalPlayer(player2Ref.current)?.pause();
             if (playerNum === 1) {
-                player1Ref.current?.getInternalPlayer()?.play();
+                getInternalPlayer(player1Ref.current)?.play();
             } else {
-                player2Ref.current?.getInternalPlayer()?.play();
+                getInternalPlayer(player2Ref.current)?.play();
             }
         },
         player1() {
@@ -149,15 +153,11 @@ export const WebPlayerEngine = (props: WebPlayerEngineProps) => {
             };
         },
         seekTo(seekTo: number) {
-            let type: 'fraction' | 'seconds' | undefined = undefined;
-
-            if (seekTo < 1) {
-                type = 'seconds';
+            if (playerNum === 1) {
+                if (player1Ref.current) seekPlayerTo(player1Ref.current, seekTo);
+            } else if (player2Ref.current) {
+                seekPlayerTo(player2Ref.current, seekTo);
             }
-
-            playerNum === 1
-                ? player1Ref.current?.seekTo(seekTo, type)
-                : player2Ref.current?.seekTo(seekTo, type);
         },
         setVolume(volume: number) {
             setInternalVolume1(normalizeVolume(volume));
@@ -175,8 +175,8 @@ export const WebPlayerEngine = (props: WebPlayerEngineProps) => {
     const volume2 = convertToLogVolume(internalVolume2);
 
     const pauseBothPlayers = useCallback(() => {
-        player1Ref.current?.getInternalPlayer()?.pause();
-        player2Ref.current?.getInternalPlayer()?.pause();
+        getInternalPlayer(player1Ref.current)?.pause();
+        getInternalPlayer(player2Ref.current)?.pause();
     }, []);
 
     const mediaErrorLabel = (code: number | undefined) => {
@@ -195,7 +195,7 @@ export const WebPlayerEngine = (props: WebPlayerEngineProps) => {
     };
 
     const handleOnError = (
-        playerRef: React.RefObject<null | ReactPlayer>,
+        playerRef: React.RefObject<null | ReactPlayerRef>,
         onEnded: () => void,
         onErrorPause: () => void,
         networkRetryCountRef: React.RefObject<number>,
@@ -279,26 +279,26 @@ export const WebPlayerEngine = (props: WebPlayerEngineProps) => {
             return;
         }
         if (playerNum === 1) {
-            player2Ref.current?.getInternalPlayer()?.pause();
+            getInternalPlayer(player2Ref.current)?.pause();
         } else {
-            player1Ref.current?.getInternalPlayer()?.pause();
+            getInternalPlayer(player1Ref.current)?.pause();
         }
     }, [isTransitioning, playerNum, playerStatus, pauseBothPlayers]);
 
     useEffect(() => {
-        const player1 = player1Ref.current?.getInternalPlayer();
+        const player1 = getInternalPlayer(player1Ref.current);
         if (player1 && player1 instanceof HTMLAudioElement) {
             player1.preservesPitch = preservesPitch;
         }
-        const player2 = player2Ref.current?.getInternalPlayer();
+        const player2 = getInternalPlayer(player2Ref.current);
         if (player2 && player2 instanceof HTMLAudioElement) {
             player2.preservesPitch = preservesPitch;
         }
     }, [preservesPitch]);
 
     const handleOnReadyPlayer1 = useCallback(
-        (player: ReactPlayer) => {
-            const internal = player.getInternalPlayer();
+        (player: ReactPlayerRef) => {
+            const internal = getInternalPlayer(player);
             if (internal && internal instanceof HTMLAudioElement) {
                 internal.preservesPitch = preservesPitch;
             }
@@ -308,8 +308,8 @@ export const WebPlayerEngine = (props: WebPlayerEngineProps) => {
     );
 
     const handleOnReadyPlayer2 = useCallback(
-        (player: ReactPlayer) => {
-            const internal = player.getInternalPlayer();
+        (player: ReactPlayerRef) => {
+            const internal = getInternalPlayer(player);
             if (internal && internal instanceof HTMLAudioElement) {
                 internal.preservesPitch = preservesPitch;
             }
@@ -318,13 +318,13 @@ export const WebPlayerEngine = (props: WebPlayerEngineProps) => {
         [onStartedPlayer2, preservesPitch],
     );
 
-    if (isLoading || !ReactPlayerComponent) {
+    if (isLoading || !ReactPlayerRefComponent) {
         return <div id="web-player-engine" style={{ display: 'none' }} />;
     }
 
     return (
         <div id="web-player-engine" style={{ display: 'none' }}>
-            <ReactPlayerComponent
+            <ReactPlayerRefComponent
                 config={{
                     file: { attributes: { crossOrigin: 'anonymous' }, forceAudio: true },
                 }}
@@ -350,7 +350,7 @@ export const WebPlayerEngine = (props: WebPlayerEngineProps) => {
                 volume={volume1}
                 width={0}
             />
-            <ReactPlayerComponent
+            <ReactPlayerRefComponent
                 config={{
                     file: { attributes: { crossOrigin: 'anonymous' }, forceAudio: true },
                 }}
