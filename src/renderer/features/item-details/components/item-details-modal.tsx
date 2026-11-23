@@ -457,7 +457,7 @@ export const ItemDetailsModal = ({ item, items }: ItemDetailsModalProps) => {
         return null;
     }
 
-    let body: ReactNode[] = [];
+    let body: ReactNode[];
 
     switch (selectedItem._itemType) {
         case LibraryItem.ALBUM:

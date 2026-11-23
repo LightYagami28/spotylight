@@ -596,7 +596,7 @@ export const ssApiClient = (args: {
             } catch (e: any | AxiosError | Error) {
                 if (isAxiosError(e)) {
                     if (e.code === 'ERR_NETWORK') {
-                        throw new Error(i18n.t('error.networkError') as string);
+                        throw new Error(i18n.t('error.networkError') as string, { cause: e });
                     }
 
                     const error = e as AxiosError;

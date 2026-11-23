@@ -48,7 +48,7 @@ const JoinedArtistsComponent = ({
         if (!name) continue;
 
         const regex = new RegExp(escapeRegex(name), 'gi');
-        let match: null | RegExpExecArray = null;
+        let match: null | RegExpExecArray;
         while ((match = regex.exec(artistName)) !== null) {
             matches.push({
                 artist,

@@ -13,7 +13,7 @@ import { TextTitle } from '/@/shared/components/text-title/text-title';
 import { Text } from '/@/shared/components/text/text';
 
 interface PageErrorFallbackProps {
-    error: Error;
+    error: unknown;
     resetErrorBoundary: () => void;
 }
 
@@ -46,22 +46,24 @@ const PageErrorFallback = ({ error, resetErrorBoundary }: PageErrorFallbackProps
                         </TextTitle>
                     </Group>
                     <Text style={{ wordBreak: 'break-word' }}>
-                        {error?.message || t('error.genericError')}
+                        {(error instanceof Error && error.message) || t('error.genericError')}
                     </Text>
-                    {process.env.NODE_ENV === 'development' && error?.stack && (
-                        <Code
-                            p="md"
-                            style={{
-                                backgroundColor: 'var(--theme-colors-surface)',
-                                fontFamily: 'monospace',
-                                maxHeight: '300px',
-                                overflow: 'auto',
-                                wordBreak: 'break-word',
-                            }}
-                        >
-                            {error.stack}
-                        </Code>
-                    )}
+                    {process.env.NODE_ENV === 'development' &&
+                        error instanceof Error &&
+                        error.stack && (
+                            <Code
+                                p="md"
+                                style={{
+                                    backgroundColor: 'var(--theme-colors-surface)',
+                                    fontFamily: 'monospace',
+                                    maxHeight: '300px',
+                                    overflow: 'auto',
+                                    wordBreak: 'break-word',
+                                }}
+                            >
+                                {error.stack}
+                            </Code>
+                        )}
                     <Group grow>
                         <Button onClick={resetErrorBoundary} size="md" variant="default">
                             {t('common.reload')}

@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next';
+
 import { nanoid } from 'nanoid/non-secure';
 import { memo, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -35,7 +37,7 @@ type FilterFieldConfig = {
     value: PlayerFilterField;
 };
 
-const getFilterFields = (t: (key: string, options?: any) => string): FilterFieldConfig[] => [
+const getFilterFields = (t: TFunction): FilterFieldConfig[] => [
     {
         label: t('table.config.label.title'),
         type: 'string',
@@ -99,7 +101,7 @@ const getFilterFields = (t: (key: string, options?: any) => string): FilterField
 ];
 
 const getOperatorsForFieldType = (
-    t: (key: string, options?: any) => string,
+    t: TFunction,
     type: 'boolean' | 'date' | 'number' | 'string',
 ): { label: string; value: PlayerFilterOperator }[] => {
     const translateOperator = (operator: PlayerFilterOperator): string => {

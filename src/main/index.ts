@@ -223,7 +223,7 @@ async function checkAllChannelsAndGetBest(): Promise<{
 function configureAndGetUpdater(): UpdaterInstance {
     const isBetaVersion = packageJson.version.includes('-beta');
     const isAlphaVersion = packageJson.version.includes('-alpha');
-    let releaseChannel = store.get('release_channel');
+    const releaseChannel = store.get('release_channel');
     const isNotConfigured = !releaseChannel;
 
     log.info('Release channel:', releaseChannel);
@@ -235,7 +235,6 @@ function configureAndGetUpdater(): UpdaterInstance {
         log.info('Release channel not configured, setting default channel');
         const defaultChannel = isAlphaVersion ? 'alpha' : isBetaVersion ? 'beta' : 'latest';
         store.set('release_channel', defaultChannel);
-        releaseChannel = defaultChannel;
     }
 
     const effectiveChannel = store.get('release_channel') as string;

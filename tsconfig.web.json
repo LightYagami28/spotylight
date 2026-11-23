@@ -15,25 +15,24 @@
   "compilerOptions": {
     "composite": true,
     "jsx": "react-jsx",
-    "baseUrl": ".",
     "paths": {
       "/@/renderer/*": [
-        "src/renderer/*"
+        "./src/renderer/*"
       ],
       "/@/lyrics-conversion-api": [
-        "src/main/features/core/lyrics/furigana.ts"
+        "./src/main/features/core/lyrics/furigana.ts"
       ],
       "/@/shared/*": [
-        "src/shared/*"
+        "./src/shared/*"
       ],
       "/@/main/*": [
-        "src/main/*"
+        "./src/main/*"
       ],
       "/@/i18n/*": [
-        "src/i18n/*"
+        "./src/i18n/*"
       ],
       "/@/remote/*": [
-        "src/remote/*"
+        "./src/remote/*"
       ]
     }
   },

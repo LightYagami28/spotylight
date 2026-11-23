@@ -10,7 +10,7 @@ import { Stack } from '/@/shared/components/stack/stack';
 import { TextTitle } from '/@/shared/components/text-title/text-title';
 
 interface ComponentErrorFallbackProps {
-    error: Error;
+    error: unknown;
     resetErrorBoundary: () => void;
 }
 

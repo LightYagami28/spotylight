@@ -249,8 +249,8 @@ export const FolderTreeBrowser = ({ fetchFolder, rootFolderQuery }: FolderTreeBr
                 // Determine if we should expand:
                 // - If children are loaded and empty, don't expand (we know it has no children)
                 // - Otherwise, try to expand/fetch (either has children or we don't know yet)
-                let shouldExpand = false;
-                let mightHaveChildren = false;
+                let shouldExpand: boolean;
+                let mightHaveChildren: boolean;
 
                 if (childrenLoaded) {
                     // Children are loaded - check if there are any

@@ -865,7 +865,6 @@ export const SubsonicController: InternalControllerEndpoint = {
 
             // Navidrome returns the total count in the header
             if (headers.get('x-total-count')) {
-                fetchNextPage = false;
                 totalRecordCount = Number(headers.get('x-total-count'));
                 break;
             }
@@ -1731,7 +1730,7 @@ export const SubsonicController: InternalControllerEndpoint = {
         let fetchNextPage = true;
         let startIndex = 0;
 
-        let fetchNextSection = true;
+        const fetchNextSection = true;
         let sectionIndex = 0;
 
         if (query.searchTerm) {
@@ -1791,7 +1790,6 @@ export const SubsonicController: InternalControllerEndpoint = {
                 const numberOfResults = (res.body.songsByGenre?.song || []).length || 0;
 
                 if (numberOfResults !== 1) {
-                    fetchNextSection = false;
                     startIndex = sectionIndex === 0 ? 0 : sectionIndex - SUBSONIC_FAST_BATCH_SIZE;
                     break;
                 } else {
@@ -1934,7 +1932,6 @@ export const SubsonicController: InternalControllerEndpoint = {
             const numberOfResults = (res.body.searchResult3?.song || []).length || 0;
 
             if (numberOfResults !== 1) {
-                fetchNextSection = false;
                 startIndex = sectionIndex === 0 ? 0 : sectionIndex - SUBSONIC_FAST_BATCH_SIZE;
                 break;
             } else {

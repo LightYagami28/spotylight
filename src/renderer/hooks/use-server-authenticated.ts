@@ -178,7 +178,9 @@ export const useServerAuthenticated = () => {
                             );
 
                             if (!authData) {
-                                throw new Error('Authentication failed: No data returned');
+                                throw new Error('Authentication failed: No data returned', {
+                                    cause: getUserInfoError,
+                                });
                             }
 
                             // Update server with new credentials

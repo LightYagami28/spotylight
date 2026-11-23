@@ -16,13 +16,8 @@ import React, {
     useRef,
     useState,
 } from 'react';
-import AutoSizer from 'react-virtualized-auto-sizer';
-import {
-    FixedSizeList,
-    ListChildComponentProps,
-    ListOnItemsRenderedProps,
-    ListOnScrollProps,
-} from 'react-window';
+import { AutoSizer } from 'react-virtualized-auto-sizer';
+import { List, type ListImperativeAPI, type RowComponentProps } from 'react-window';
 
 import styles from './item-grid-list.module.css';
 
@@ -66,7 +61,7 @@ interface VirtualizedGridListProps {
     onScroll?: ItemGridListProps['onScroll'];
     onScrollEnd?: ItemGridListProps['onScrollEnd'];
     outerRef: RefObject<any>;
-    ref: RefObject<FixedSizeList<GridItemProps> | null>;
+    ref: RefObject<ListImperativeAPI | null>;
     rows?: ItemCardProps['rows'];
     size?: 'compact' | 'default' | 'large';
     tableMetaRef: RefObject<null | {
@@ -143,9 +138,15 @@ const VirtualizedGridList = React.memo(
             size,
         ]);
 
+        const lastScrollOffsetRef = useRef(0);
+
         const handleOnScroll = useCallback(
-            ({ scrollDirection, scrollOffset }: ListOnScrollProps) => {
-                onScroll?.(scrollOffset, scrollDirection === 'forward' ? 'down' : 'up');
+            (event: React.UIEvent<HTMLDivElement>) => {
+                const scrollOffset = event.currentTarget.scrollTop;
+                const direction = scrollOffset >= lastScrollOffsetRef.current ? 'down' : 'up';
+                lastScrollOffsetRef.current = scrollOffset;
+
+                onScroll?.(scrollOffset, direction);
 
                 if (isInitialScrollRef.current) {
                     if (initialScrollOffsetRef.current === null) {
@@ -162,7 +163,7 @@ const VirtualizedGridList = React.memo(
                 }
 
                 scrollEndTimeoutRef.current = setTimeout(() => {
-                    onScrollEnd?.(scrollOffset, scrollDirection === 'forward' ? 'down' : 'up');
+                    onScrollEnd?.(scrollOffset, direction);
                     scrollEndTimeoutRef.current = null;
                 }, 150);
             },
@@ -177,16 +178,21 @@ const VirtualizedGridList = React.memo(
             };
         }, []);
 
-        const handleOnItemsRendered = useCallback(
-            (items: ListOnItemsRenderedProps) => {
+        const handleOnRowsRendered = useCallback(
+            (visibleRows: { startIndex: number; stopIndex: number }) => {
                 const columnCount = tableMetaRef.current?.columnCount || 0;
                 onRangeChanged?.({
-                    startIndex: items.visibleStartIndex * columnCount,
-                    stopIndex: items.visibleStopIndex * columnCount,
+                    startIndex: visibleRows.startIndex * columnCount,
+                    stopIndex: visibleRows.stopIndex * columnCount + columnCount - 1,
                 });
             },
             [onRangeChanged, tableMetaRef],
         );
+
+        useEffect(() => {
+            const element = ref.current?.element;
+            if (element) outerRef.current = element;
+        }, [outerRef, ref]);
 
         useEffect(() => {
             isInitialScrollRef.current = true;
@@ -225,20 +231,19 @@ const VirtualizedGridList = React.memo(
         };
 
         return (
-            <FixedSizeList
-                height={height}
-                initialScrollOffset={calculateInitialScrollOffset()}
-                itemCount={tableMeta.rowCount || 0}
-                itemData={itemData}
-                itemSize={tableMeta.itemHeight || 0}
-                onItemsRendered={handleOnItemsRendered}
+            <List
+                defaultHeight={height}
+                defaultScrollOffset={calculateInitialScrollOffset()}
+                listRef={ref}
+                onRowsRendered={handleOnRowsRendered}
                 onScroll={handleOnScroll}
-                outerRef={outerRef}
-                ref={ref}
-                width={width}
-            >
-                {ListComponent}
-            </FixedSizeList>
+                overscanCount={4}
+                rowComponent={ListComponent}
+                rowCount={tableMeta.rowCount || 0}
+                rowHeight={tableMeta.itemHeight || 0}
+                rowProps={itemData}
+                style={{ height, width }}
+            />
         );
     },
 );
@@ -259,7 +264,7 @@ const createThrottledSetTableMeta = (
         const is3xl = width >= 1920;
         const is4xl = width >= 2560;
 
-        let dynamicItemsPerRow = 2;
+        let dynamicItemsPerRow: number;
 
         if (is4xl) {
             dynamicItemsPerRow = 10;
@@ -389,7 +394,7 @@ const BaseItemGridList = ({
 }: ItemGridListProps) => {
     const rootRef = useRef<HTMLDivElement | null>(null);
     const outerRef = useRef<HTMLDivElement | null>(null);
-    const listRef = useRef<FixedSizeList<GridItemProps>>(null);
+    const listRef = useRef<ListImperativeAPI>(null);
     const { ref: containerRef, width: containerWidth } = useElementSize();
     const { focused, ref: containerFocusRef } = useFocusWithin();
     const handleRef = useRef<ItemListHandle | null>(null);
@@ -544,14 +549,17 @@ const BaseItemGridList = ({
                 alignment = 'end';
             }
 
-            listRef.current.scrollToItem(row, alignment);
+            listRef.current.scrollToRow({
+                align: alignment,
+                behavior: options?.behavior === 'smooth' ? 'smooth' : 'instant',
+                index: row,
+            });
         },
         [],
     );
 
     const scrollToOffset = useCallback((offset: number) => {
-        if (!listRef.current) return;
-        listRef.current.scrollTo(offset);
+        listRef.current?.element?.scrollTo({ top: offset });
     }, []);
 
     // Handle keyboard navigation
@@ -810,8 +818,8 @@ const BaseItemGridList = ({
             {...animationProps.fadeIn}
             transition={{ duration: enableEntranceAnimation ? 0.5 : 0, ease: 'anticipate' }}
         >
-            <AutoSizer>
-                {({ height, width }) => (
+            <AutoSizer
+                renderProp={({ height, width }) => (
                     <VirtualizedGridList
                         _tableMetaVersion={tableMetaVersion}
                         controls={controls}
@@ -823,7 +831,7 @@ const BaseItemGridList = ({
                         enableSelection={enableSelection}
                         gap={gap}
                         getItem={resolvedGetItem}
-                        height={height}
+                        height={height ?? 0}
                         initialTop={initialTop}
                         internalState={internalState}
                         itemCount={resolvedItemCount}
@@ -836,28 +844,30 @@ const BaseItemGridList = ({
                         rows={rows}
                         size={size}
                         tableMetaRef={tableMetaRef}
-                        width={width}
+                        width={width ?? 0}
                     />
                 )}
-            </AutoSizer>
+            />
         </motion.div>
     );
 };
 
-const ListComponent = memo((props: ListChildComponentProps<GridItemProps>) => {
-    const { index, style } = props;
+const ListComponent = (props: RowComponentProps<GridItemProps>) => {
+    const { ariaAttributes, index, style } = props;
     const {
         columns,
         controls,
         enableDrag,
+        enableExpansion,
         enableMultiSelect,
         gap,
         getItem,
+        internalState,
         itemCount,
         itemType,
         rows,
         size,
-    } = props.data;
+    } = props;
 
     const items: ReactNode[] = [];
     const startIndex = index * columns;
@@ -884,10 +894,10 @@ const ListComponent = memo((props: ListChildComponentProps<GridItemProps>) => {
                         controls={controls}
                         data={item}
                         enableDrag={enableDrag}
-                        enableExpansion={props.data.enableExpansion}
+                        enableExpansion={enableExpansion}
                         enableMultiSelect={enableMultiSelect}
                         imageAsLink={!enableMultiSelect}
-                        internalState={props.data.internalState}
+                        internalState={internalState}
                         itemType={itemType}
                         rows={rows}
                         type={size === 'compact' ? 'compact' : 'poster'}
@@ -901,11 +911,11 @@ const ListComponent = memo((props: ListChildComponentProps<GridItemProps>) => {
     }
 
     return (
-        <div className={styles.itemList} style={style}>
+        <div {...ariaAttributes} className={styles.itemList} style={style}>
             {items}
         </div>
     );
-});
+};
 
 export const ItemGridList = memo(BaseItemGridList);
 
