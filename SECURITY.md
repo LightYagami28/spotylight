@@ -1,6 +1,6 @@
 # Security Policy
 
-### Supported Versions
+## Supported Versions
 
 SpotyLight is a fork of Feishin. Fixes are developed on the `spotylight`
 branch of this repository.
@@ -11,7 +11,7 @@ branch of this repository.
 | Earlier snapshots | :x: |
 | Upstream Feishin | :x: (report here first) |
 
-### Reporting a Vulnerability
+## Reporting a Vulnerability
 
 Please do not file a public issue for a security problem. Use GitHub's private
 vulnerability reporting for this repository (Security → Report a vulnerability)
