@@ -14,8 +14,8 @@ branch of this repository.
 ## Reporting a Vulnerability
 
 Do not open a public issue for a security problem. Use this repository's
-private vulnerability reporting, or contact the maintainer at
-<developer@lightyagami.dev>. Include:
+private vulnerability reporting (Security → Report a vulnerability) and
+include:
 
 - the component affected and the revision you tested;
 - steps to reproduce, including a proof of concept if available;
