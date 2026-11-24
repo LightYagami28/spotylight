@@ -1,5 +1,5 @@
-appId: org.jeffvli.feishin
-productName: Feishin
+appId: dev.lightyagami.spotylight
+productName: SpotyLight
 artifactName: ${productName}-${version}-${os}-${arch}.${ext}
 electronVersion: 43.8.7
 directories:
@@ -47,8 +47,8 @@ mac:
     gatekeeperAssess: false
     notarize: false
     extendInfo:
-        NSAudioCaptureUsageDescription: 'System audio access is required for mpv visualizer capture in Feishin'
-        NSLocalNetworkUsageDescription: 'Local network is necessary for accessing servers hosted on the same system as Feishin'
+        NSAudioCaptureUsageDescription: 'System audio access is required for mpv visualizer capture in SpotyLight'
+        NSLocalNetworkUsageDescription: 'Local network is necessary for accessing servers hosted on the same system as SpotyLight'
 
 dmg:
     contents: [{ x: 130, y: 220 }, { x: 410, y: 220, type: link, path: /Applications }]
@@ -68,7 +68,7 @@ toolsets:
 npmRebuild: false
 publish:
     provider: github
-    owner: jeffvli
-    repo: feishin
+    owner: LightYagami28
+    repo: spotylight
     channel: beta
     releaseType: draft
