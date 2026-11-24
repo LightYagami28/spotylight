@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "SpotyLight"
+type: software
+authors:
+  - family-names: Maule
+    given-names: Alessandro
+    alias: Light Yagami
+    email: maule2703@gmail.com
+license: GPL-3.0-or-later
+repository-code: "https://github.com/LightYagami28/spotylight"
+date-released: "2026-11-23"
+abstract: >-
+  Self-hosted music client for Navidrome and Subsonic servers, forked from
+  Feishin by jeffvli and distributed under the GNU General Public License v3.

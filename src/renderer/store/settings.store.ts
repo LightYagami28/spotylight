@@ -839,7 +839,7 @@ export const ValidationSettingsStateSchema = z.object({
     font: FontSettingsSchema,
     general: GeneralSettingsSchema,
     hotkeys: HotkeysSettingsSchema,
-    lists: z.record(z.nativeEnum(ItemListKey), ItemListConfigSchema),
+    lists: z.partialRecord(z.nativeEnum(ItemListKey), ItemListConfigSchema),
     lyrics: LyricsSettingsSchema,
     lyricsDisplay: z.record(z.string(), LyricsDisplaySettingsSchema),
     playback: PlaybackSettingsSchema,
