@@ -323,7 +323,9 @@ export default class MenuBuilder {
                 },
                 {
                     click() {
-                        shell.openExternal('https://github.com/LightYagami28/spotylight/discussions');
+                        shell.openExternal(
+                            'https://github.com/LightYagami28/spotylight/discussions',
+                        );
                     },
                     label: 'Community Discussions',
                 },
@@ -440,13 +442,17 @@ export default class MenuBuilder {
                     },
                     {
                         click() {
-                            shell.openExternal('https://github.com/LightYagami28/spotylight/discussions');
+                            shell.openExternal(
+                                'https://github.com/LightYagami28/spotylight/discussions',
+                            );
                         },
                         label: 'Community Discussions',
                     },
                     {
                         click() {
-                            shell.openExternal('https://github.com/LightYagami28/spotylight/issues');
+                            shell.openExternal(
+                                'https://github.com/LightYagami28/spotylight/issues',
+                            );
                         },
                         label: 'Search Issues',
                     },
