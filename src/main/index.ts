@@ -57,9 +57,9 @@ const ALPHA_UPDATER_CONFIG: {
 };
 
 const GITHUB_UPDATER_CONFIG = {
-    owner: 'jeffvli',
+    owner: 'LightYagami28',
     provider: 'github' as const,
-    repo: 'feishin',
+    repo: 'spotylight',
 };
 
 type UpdaterInstance = AppImageUpdater | MacUpdater | NsisUpdater | typeof autoUpdater;
@@ -599,7 +599,7 @@ const createTray = () => {
         });
     }
 
-    tray.setToolTip('Feishin');
+    tray.setToolTip('SpotyLight');
     tray.setContextMenu(contextMenu);
 };
 
