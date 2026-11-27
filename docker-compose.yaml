@@ -1,16 +1,16 @@
 services:
-    feishin:
-        container_name: feishin
-        image: "ghcr.io/jeffvli/feishin:latest"
+    spotylight:
+        container_name: spotylight
+        image: "ghcr.io/lightyagami28/spotylight:latest"
         restart: unless-stopped
         environment:
-            - SERVER_NAME=jellyfin # pre-defined server name
-            - SERVER_LOCK=false # When true AND name/type/url are set, only username/password can be toggled
-            - SERVER_TYPE=jellyfin # the allowed types are: jellyfin, navidrome, subsonic. These values are case insensitive
-            - SERVER_URL=http://localhost:8096 # http://address:port or https://address:port
-            # - REMOTE_URL=http://share.localhost # Used for compatibility with external functionality, such as custom sharing URLs on Navidrome
-            - LEGACY_AUTHENTICATION=false # When SERVER_LOCK is true, sets the legacyauth flag for server authentication (true or false)
-            - ANALYTICS_DISABLED=true # Set to true to disable Umami analytics tracking
+            - SERVER_NAME=Navidrome # nome del server predefinito
+            - SERVER_LOCK=true # con true e nome/tipo/url impostati, si inseriscono solo utente e password
+            - SERVER_TYPE=navidrome # valori ammessi: jellyfin, navidrome, subsonic (maiuscole indifferenti)
+            - SERVER_URL=https://musica.example.com # http://indirizzo:porta oppure https://indirizzo:porta
+            # - REMOTE_URL=https://condividi.example.com # URL per funzioni esterne, come la condivisione
+            - LEGACY_AUTHENTICATION=false # con SERVER_LOCK=true, imposta legacyauth (true o false)
+            - ANALYTICS_DISABLED=true # disattiva le statistiche d'uso
+            # - CSP_EXTRA_SRC=https://lrclib.net # origini aggiuntive consentite dalla Content-Security-Policy
         ports:
-            - 9180:9180
-            # Alternatively, to restrict to only localhost, - 127.0.0.1:9180:8190
+            - 127.0.0.1:9180:9180
